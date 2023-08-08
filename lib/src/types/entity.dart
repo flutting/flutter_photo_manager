@@ -512,7 +512,7 @@ class AssetEntity {
   ///  * [loadFile] which can obtain file with [PMProgressHandler].
   Future<File?> get originFile => _getFile(isOrigin: true);
 
-  Future<File?> customQualityFile({double quality = 80}) =>
+  Future<File?> customQualityFile({double quality = 0.8}) =>
       _getCustomQualityFile(quality: quality);
 
   /// Obtain the origin file with subtype.
