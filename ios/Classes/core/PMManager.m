@@ -534,14 +534,9 @@
             }
         }
         if (asset.isVideo) {
-            if (isOrigin) {
-                [self fetchOriginVideoFile:asset handler:handler progressHandler:progressHandler];
-            } else {
-                [self fetchFullSizeVideo:asset handler:handler progressHandler:progressHandler withScheme:NO];
-            }
+            [self fetchCustomQualityImageFile:asset quality:quality resultHandler:handler progressHandler:progressHandler];
             return;
         }
-        [self fetchCustomQualityImageFile:asset quality:quality resultHandler:handler progressHandler:progressHandler];
         return;
     }
     [handler replyError:@"Asset file cannot be obtained."];
