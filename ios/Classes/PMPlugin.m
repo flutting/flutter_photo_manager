@@ -377,7 +377,7 @@
     } else if ([call.method isEqualToString:@"getCustomQualityFile"]) {
         NSString *id = call.arguments[@"id"];
         int subtype = [call.arguments[@"subtype"] intValue];
-        int quality = [call.arguments[@"quality"] doubleValue];
+        double quality = [call.arguments[@"quality"] doubleValue];
         PMProgressHandler *progressHandler = [self getProgressHandlerFromDict:call.arguments];
         [manager getCustomQualityFileWithId:id
                               quality:quality
