@@ -146,7 +146,12 @@
 }
 
 - (void)replyPermssionResult:(ResultHandler *)handler status:(PHAuthorizationStatus)status isOnlyAdd:(BOOL)isOnlyAdd {
-    BOOL auth = PHAuthorizationStatusAuthorized == status;
+    BOOL auth = false;
+    if (@available(iOS 14, *)) {
+        auth = PHAuthorizationStatusLimited == status || PHAuthorizationStatusAuthorized == status;
+    } else {
+        auth = PHAuthorizationStatusAuthorized == status;
+    }
     if (isOnlyAdd) {
         [self.manager setOnlyAddAuth:auth];
     } else {
