@@ -118,7 +118,12 @@
         } else {
             if (onlyAdd) {
                 [self requestOnlyAddPermission:^(PHAuthorizationStatus status) {
-                    BOOL auth = PHAuthorizationStatusAuthorized == status;
+                    BOOL auth = false;
+                    if (@available(iOS 14, *)) {
+                        auth = PHAuthorizationStatusLimited == status || PHAuthorizationStatusAuthorized == status;
+                    } else {
+                        auth = PHAuthorizationStatusAuthorized == status;
+                    }
                     [manager setOnlyAddAuth:auth];
                     if (auth) {
                         [self onAuth:call result:result];
