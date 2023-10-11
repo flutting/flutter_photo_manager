@@ -4,9 +4,30 @@ that can be found in the LICENSE file. -->
 
 # CHANGELOG
 
+## 2.7.2
+
+### Fixes
+
+- Correct the key when fetching video info with MMR on Android. (#997)
+- Retrieve original media instead of one with adjustments/filters for subtype files on iOS. (#976)
+- Returns original file name instead of `FullSizeRender.*` if this has adjustments on iOS. (#976)
+
+### Improvements
+
+- Add locks to the image provider.
+
+## 2.7.1
+
+### Fixes
+
+- Fix namespace on Android.
+- Remove the package definition from the manifest.
+- Use `math.pow(2^63)-1` to make Web compile work again.
+- Fix the `end` argument of `PhotoManager.getAssetListRange` is being handled incorrectly on Darwin. (#962)
+
 ## 2.7.0
 
-### Feature
+### Features
 
 - Support `darwinType` and `darwinSubType` in `AssetPathEntity` on iOS and macOS. (#950)
 
