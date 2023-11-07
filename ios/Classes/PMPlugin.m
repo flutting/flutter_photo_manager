@@ -133,66 +133,10 @@
         [self handlePermission:manager handler:handler requestAccessLevel:requestAccessLevel];
     } else if ([call.method isEqualToString:@"presentLimited"]) {
         [self presentLimited:handler];
-    } else if ([call.method isEqualToString:@"clearFileCache"]) {
-        [manager clearFileCache];
-        [handler reply:@1];
-    } else if ([call.method isEqualToString:@"openSetting"]) {
-        [PMManager openSetting:handler];
-    } else if ([call.method isEqualToString:@"ignorePermissionCheck"]) {
-        ignoreCheckPermission = [call.arguments[@"ignore"] boolValue];
-        [handler reply:@(ignoreCheckPermission)];
-    } else if ([call.method isEqualToString:@"log"]) {
-        PMLogUtils.sharedInstance.isLog = [call.arguments boolValue];
-        [handler reply:@1];
-    } else if (manager.isAuth) {
-        [self onAuth:call result:result];
-    } else if (onlyAdd && manager.isOnlyAddAuth) {
-        [self onAuth:call result:result];
-    } else {
-        if (ignoreCheckPermission) {
-            [self onAuth:call result:result];
-        } else {
-            if (onlyAdd) {
-                [self requestOnlyAddPermission:^(PHAuthorizationStatus status) {
-                    BOOL auth = false;
-                    if (@available(iOS 14, *)) {
-                        auth = PHAuthorizationStatusLimited == status || PHAuthorizationStatusAuthorized == status;
-                    } else {
-                        auth = PHAuthorizationStatusAuthorized == status;
-                    }
-                    [manager setOnlyAddAuth:auth];
-                    if (auth) {
-                        [self onAuth:call result:result];
-                    } else {
-                        [handler replyError:@"need add permission"];
-                    }
-                }];
-            } else {
-                [self requestPermissionForWriteAndRead:^(BOOL auth) {
-                  [manager setAuth:auth];
-                  if (auth) {
-                      [self onAuth:call result:result];
-                  } else {
-                      [handler replyError:@"need permission"];
-                  }
-                }];
-            }
-        }
     }
 }
 
 - (void)replyPermssionResult:(ResultHandler *)handler status:(PHAuthorizationStatus)status isOnlyAdd:(BOOL)isOnlyAdd {
-    BOOL auth = false;
-    if (@available(iOS 14, *)) {
-        auth = PHAuthorizationStatusLimited == status || PHAuthorizationStatusAuthorized == status;
-    } else {
-        auth = PHAuthorizationStatusAuthorized == status;
-    }
-    if (isOnlyAdd) {
-        [self.manager setOnlyAddAuth:auth];
-    } else {
-        [self.manager setAuth:auth];
-    }
     [handler reply:@(status)];
 }
 
