@@ -365,6 +365,19 @@
                                subtype:subtype
                          resultHandler:handler
                        progressHandler:progressHandler];
+    } else if ([call.method isEqualToString:@"getCustomQualityFile"]) {
+        NSString *id = call.arguments[@"id"];
+        int subtype = [call.arguments[@"subtype"] intValue];
+        double quality = [call.arguments[@"quality"] doubleValue];
+        PMProgressHandler *progressHandler = [self getProgressHandlerFromDict:call.arguments];
+        [manager getCustomQualityFileWithId:id
+                              quality:quality
+                               subtype:subtype
+                         resultHandler:handler
+                       progressHandler:progressHandler];
+    } else if ([call.method isEqualToString:@"releaseMemoryCache"]) {
+        [manager clearCache];
+        [handler reply:nil];
     } else if ([call.method isEqualToString:@"fetchPathProperties"]) {
         NSString *id = call.arguments[@"id"];
         int requestType = [call.arguments[@"type"] intValue];

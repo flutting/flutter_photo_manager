@@ -26,6 +26,7 @@ class PMConstants {
   static const String mGetThumb = 'getThumb';
   static const String mGetOriginBytes = 'getOriginBytes';
   static const String mGetFullFile = 'getFullFile';
+  static const String mGetCustomQualityFile = 'getCustomQualityFile';
   static const String mReleaseMemoryCache = 'releaseMemoryCache';
   static const String mLog = 'log';
   static const String mOpenSetting = 'openSetting';

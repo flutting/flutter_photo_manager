@@ -197,6 +197,21 @@ class PhotoManagerPlugin with BasePlugin, IosPlugin, AndroidPlugin {
     return _channel.invokeMethod(PMConstants.mGetFullFile, params);
   }
 
+  Future<String?> getCustomQualityFile(
+      String id, {
+        required double quality,
+        PMProgressHandler? progressHandler,
+        int subtype = 0,
+      }) async {
+    final Map<String, dynamic> params = <String, dynamic>{
+      'id': id,
+      'quality': quality,
+      'subtype': subtype,
+    };
+    _injectParams(params, progressHandler);
+    return _channel.invokeMethod(PMConstants.mGetCustomQualityFile, params);
+  }
+
   Future<void> setLog(bool isLog) {
     return _channel.invokeMethod(PMConstants.mLog, isLog);
   }

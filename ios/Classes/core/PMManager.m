@@ -492,6 +492,32 @@
     [handler replyError:@"Asset file cannot be obtained."];
 }
 
+- (void)getCustomQualityFileWithId:(NSString *)id quality:(double)quality subtype:(int)subtype resultHandler:(NSObject <PMResultHandler> *)handler progressHandler:(NSObject <PMProgressHandlerProtocol> *)progressHandler {
+    PMAssetEntity *entity = [self getAssetEntity:id];
+    if (entity && entity.phAsset) {
+        PHAsset *asset = entity.phAsset;
+        if (@available(iOS 9.1, *)) {
+            if (asset.isLivePhoto && (subtype & PHAssetMediaSubtypePhotoLive) == PHAssetMediaSubtypePhotoLive) {
+                [self fetchLivePhotosFile:asset handler:handler progressHandler:progressHandler];
+                return;
+            }
+        }
+        if (@available(macOS 14.0, *)) {
+            if (asset.isLivePhoto && (subtype & PHAssetMediaSubtypePhotoLive) == PHAssetMediaSubtypePhotoLive) {
+                [self fetchLivePhotosFile:asset handler:handler progressHandler:progressHandler];
+                return;
+            }
+        }
+        if (asset.isVideo) {
+            [self fetchFullSizeVideo:asset handler:handler progressHandler:progressHandler withScheme:NO];
+            return;
+        }
+        [self fetchCustomQualityImageFile:asset quality:quality resultHandler:handler progressHandler:progressHandler];
+        return;
+    }
+    [handler replyError:@"Asset file cannot be obtained."];
+}
+
 - (void)fetchLivePhotosFile:(PHAsset *)asset handler:(NSObject <PMResultHandler> *)handler progressHandler:(NSObject <PMProgressHandlerProtocol> *)progressHandler {
     PHAssetResource *resource = [asset getLivePhotosResource];
     if (!resource) {
@@ -825,6 +851,57 @@
         }
 
         NSData *data = [PMImageUtil convertToData:image formatType:PMThumbFormatTypeJPEG quality:1.0];
+
+        if (data) {
+            NSString *path = [self writeFullFileWithAssetId:asset imageData: data];
+            [handler reply:path];
+        } else {
+            [handler reply:nil];
+        }
+
+        [self notifySuccess:progressHandler];
+    }];
+}
+
+- (void)fetchCustomQualityImageFile:(PHAsset *)asset quality:(double)quality resultHandler:(NSObject <PMResultHandler> *)handler progressHandler:(NSObject <PMProgressHandlerProtocol> *)progressHandler {
+    PHImageManager *manager = PHImageManager.defaultManager;
+
+    PHImageRequestOptions *options = [PHImageRequestOptions new];
+    [options setDeliveryMode:PHImageRequestOptionsDeliveryModeOpportunistic];
+    [options setNetworkAccessAllowed:YES];
+    [options setResizeMode:PHImageRequestOptionsResizeModeNone];
+    [options setSynchronous:YES];
+    [options setVersion:PHImageRequestOptionsVersionCurrent];
+    [self notifyProgress:progressHandler progress:0 state:PMProgressStatePrepare];
+    [options setProgressHandler:^(double progress, NSError *error, BOOL *stop,
+                                  NSDictionary *info) {
+        if (error) {
+            [self notifyProgress:progressHandler progress:progress state:PMProgressStateFailed];
+            [progressHandler deinit];
+            return;
+        }
+        if (progress != 1) {
+            [self notifyProgress:progressHandler progress:progress state:PMProgressStateLoading];
+        }
+    }];
+
+    [manager requestImageForAsset:asset
+                       targetSize:PHImageManagerMaximumSize
+                      contentMode:PHImageContentModeDefault
+                          options:options
+                    resultHandler:^(PMImage *_Nullable image,
+                                    NSDictionary *_Nullable info) {
+
+        BOOL downloadFinished = [PMManager isDownloadFinish:info];
+        if (!downloadFinished) {
+            return;
+        }
+
+        if ([handler isReplied]) {
+            return;
+        }
+
+        NSData *data = [PMImageUtil convertToData:image formatType:PMThumbFormatTypeJPEG quality:MIN(1.0, quality)];
 
         if (data) {
             NSString *path = [self writeFullFileWithAssetId:asset imageData: data];
