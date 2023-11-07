@@ -4,7 +4,27 @@ that can be found in the LICENSE file. -->
 
 # CHANGELOG
 
-## 2.7.2
+## 2.8.0
+
+### Feature
+
+- Support android API 34(Android 14) limit access to photos and videos.
+- Because limit permission, we refactor the permission request API.
+
+***Breaking changes for permission behavior***
+
+Methods do not implicitly call for permission requests anymore.
+User must follow the below methods to ensure permissions were granted:
+
+1. `PhotoManager.requestPermissionExtend()`, verify if the result is
+   `PermissionState.authorized` or `PermissionState.limited`.
+2. `PhotoManager.setIgnorePermissionCheck(true)`, ignoring permission checks,
+   handle permission with other mechanisms.
+
+Behavior changes to the method of the method of `PhotoManager.editor.deleteWithIds`:
+
+- The behavior changes to delete instead of moving to Trash on Android 30+. (#959)
+- Provides a new method to move resources to the Trash. (`PhotoManager.editor.android.moveToTrash`), the method only support Android 30+. (#1005)
 
 ### Fixes
 
@@ -52,7 +72,7 @@ that can be found in the LICENSE file. -->
 - Add two new static methods for `PhotoManager`:
   - `getAssetCount` for getting assets count.
   - `getAssetListRange` for getting assets between start and end.
-  
+
 ## 2.5.2
 
 ### Improvements

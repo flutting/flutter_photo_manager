@@ -82,15 +82,51 @@
 #endif
 }
 
+- (BOOL)isNotNeedPermissionMethod:(NSString *)method {
+    return [@[@"log", @"openSetting", @"clearFileCache", @"releaseMemoryCache", @"ignorePermissionCheck"] indexOfObject:method] != NSNotFound;
+}
+
+- (BOOL)isAboutPermissionMethod:(NSString *)method {
+    return [@[@"presentLimited", @"requestPermissionExtend"] indexOfObject:method] != NSNotFound;
+}
+
 - (void)onMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
-    ResultHandler *handler = [ResultHandler handlerWithResult:result];
+    ResultHandler *handler = [ResultHandler handlerWithCall:call result:result];
+
+    if ([self isNotNeedPermissionMethod:call.method]) {
+        [self handleNotNeedPermissionMethod:handler];
+    } else if ([self isAboutPermissionMethod:call.method]) {
+        [self handleAboutPermissionMethod:handler];
+    } else {
+        [self onAuth:handler];
+    }
+}
+
+- (void)handleNotNeedPermissionMethod:(ResultHandler *)handler {
+    FlutterMethodCall *call = handler.call;
+    NSString *method = call.method;
     PMManager *manager = self.manager;
 
-    BOOL onlyAdd = NO;
-    if (call.arguments && [call.arguments isKindOfClass:[NSDictionary class]]){
-        id onlyAddParams = call.arguments[@"onlyAddPermission"];
-        onlyAdd = onlyAddParams && [onlyAddParams boolValue];
+    if ([method isEqualToString:@"clearFileCache"]) {
+        [manager clearFileCache];
+        [handler reply:@1];
+    } else if ([method isEqualToString:@"openSetting"]) {
+        [PMManager openSetting:handler];
+    } else if ([method isEqualToString:@"ignorePermissionCheck"]) {
+        ignoreCheckPermission = [call.arguments[@"ignore"] boolValue];
+        [handler reply:@(ignoreCheckPermission)];
+    } else if ([method isEqualToString:@"log"]) {
+        PMLogUtils.sharedInstance.isLog = [call.arguments boolValue];
+        [handler reply:@1];
+    } else if ([call.method isEqualToString:@"releaseMemoryCache"]) {
+        [manager clearCache];
+        [handler reply:nil];
     }
+}
+
+- (void)handleAboutPermissionMethod:(ResultHandler *)handler {
+    FlutterMethodCall *call = handler.call;
+    PMManager *manager = self.manager;
 
     if ([call.method isEqualToString:@"requestPermissionExtend"]) {
         int requestAccessLevel = [call.arguments[@"iosAccessLevel"] intValue];
@@ -304,14 +340,13 @@
     dispatch_async(dispatch_get_global_queue(0, 0), block);
 }
 
-- (void)onAuth:(FlutterMethodCall *)call result:(FlutterResult)result {
-    ResultHandler *handler = [ResultHandler handlerWithResult:result];
+- (void)onAuth:(ResultHandler *)handler {
     PMManager *manager = self.manager;
     __block PMNotificationManager *notificationManager = self.notificationManager;
 
     [self runInBackground:^{
       @try {
-          [self handleMethodResult:call handler:handler manager:manager notificationManager:notificationManager];
+          [self handleMethodResultHandler:handler manager:manager notificationManager:notificationManager];
       }
       @catch (NSException *exception) {
           [handler replyError:exception.reason];
@@ -319,7 +354,9 @@
     }];
 }
 
-- (void)handleMethodResult:(FlutterMethodCall *)call handler:(ResultHandler *)handler manager:(PMManager *)manager notificationManager:(PMNotificationManager *)notificationManager {
+- (void)handleMethodResultHandler:(ResultHandler *)handler manager:(PMManager *)manager notificationManager:(PMNotificationManager *)notificationManager {
+    FlutterMethodCall *call = handler.call;
+
     if ([call.method isEqualToString:@"getAssetPathList"]) {
         int type = [call.arguments[@"type"] intValue];
         BOOL hasAll = [call.arguments[@"hasAll"] boolValue];
@@ -542,35 +579,9 @@
           }
         }];
     } else if ([@"createFolder" isEqualToString:call.method]) {
-        if (ignoreCheckPermission) {
-            [self createFolder:call manager:manager handler:handler];
-            return;
-        }
-        [self requestPermissionStatus:2 completeHandler:^(PHAuthorizationStatus status) {
-          if (status == PHAuthorizationStatusAuthorized) {
-              [self createFolder:call manager:manager handler:handler];
-              return;
-          }
-          [handler reply:[FlutterError
-              errorWithCode:@"PERMISSION_NOT_AUTHORIZED"
-                    message:@"fetchPathProperties only works with authorized permission."
-                    details:nil]];
-        }];
+        [self createFolder:call manager:manager handler:handler];
     } else if ([@"createAlbum" isEqualToString:call.method]) {
-        if (ignoreCheckPermission) {
-            [self createAlbum:call manager:manager handler:handler];
-            return;
-        }
-        [self requestPermissionStatus:2 completeHandler:^(PHAuthorizationStatus status) {
-          if (status == PHAuthorizationStatusAuthorized) {
-              [self createAlbum:call manager:manager handler:handler];
-              return;
-          }
-          [handler reply:[FlutterError
-              errorWithCode:@"PERMISSION_NOT_AUTHORIZED"
-                    message:@"fetchPathProperties only works with authorized permission."
-                    details:nil]];
-        }];
+        [self createAlbum:call manager:manager handler:handler];
     } else if ([@"removeInAlbum" isEqualToString:call.method]) {
         NSArray *assetId = call.arguments[@"assetId"];
         NSString *pathId = call.arguments[@"pathId"];
