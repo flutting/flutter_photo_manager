@@ -512,6 +512,9 @@ class AssetEntity {
   ///  * [loadFile] which can obtain file with [PMProgressHandler].
   Future<File?> get originFile => _getFile(isOrigin: true);
 
+  Future<File?> customQualityFile({double quality = 0.8}) =>
+      _getCustomQualityFile(quality: quality);
+
   /// Obtain the origin file with subtype.
   ///
   /// This method only takes effect on iOS, typically for Live Photos.
@@ -712,6 +715,30 @@ class AssetEntity {
     final String? path = await plugin.getFullFile(
       id,
       isOrigin: isOrigin,
+      progressHandler: progressHandler,
+      subtype: subtype,
+    );
+    if (path == null) {
+      return null;
+    }
+    return File(path);
+  }
+
+  Future<File?> _getCustomQualityFile({
+    required double quality,
+    PMProgressHandler? progressHandler,
+    int subtype = 0,
+  }) async {
+    assert(
+      _platformMatched,
+      '${Platform.operatingSystem} does not support obtain file.',
+    );
+    if (!_platformMatched) {
+      return null;
+    }
+    final String? path = await plugin.getCustomQualityFile(
+      id,
+      quality: quality,
       progressHandler: progressHandler,
       subtype: subtype,
     );
