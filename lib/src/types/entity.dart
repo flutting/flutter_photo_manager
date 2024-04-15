@@ -12,7 +12,6 @@ import '../filter/base_filter.dart';
 import '../filter/classical/filter_option_group.dart';
 import '../filter/path_filter.dart';
 import '../internal/constants.dart';
-import '../internal/editor.dart';
 import '../internal/enums.dart';
 import '../internal/plugin.dart';
 import '../internal/progress_handler.dart';
@@ -28,8 +27,6 @@ class AssetPathEntity {
   AssetPathEntity({
     required this.id,
     required this.name,
-    @Deprecated('Use assetCountAsync instead. This will be removed in 3.0.0')
-        this.assetCount = 0,
     this.albumType = 1,
     this.lastModified,
     this.type = RequestType.common,
@@ -68,13 +65,6 @@ class AssetPathEntity {
   ///  * Android: Path name.
   ///  * iOS/macOS: Album/Folder name.
   final String name;
-
-  /// Total assets count of the album.
-  ///
-  /// The synchronized count will cause performance regression on iOS,
-  /// here the asynchronized getter [assetCountAsync] is preferred.
-  @Deprecated('Use assetCountAsync instead. This will be removed in 3.0.0')
-  final int assetCount;
 
   /// Total assets count of the path with the asynchronized getter.
   Future<int> get assetCountAsync => plugin.getAssetCountFromPath(this);
@@ -681,7 +671,7 @@ class AssetEntity {
   /// Check whether the asset has been deleted.
   Future<bool> get exists => plugin.assetExistsWithId(id);
 
-  /// Provide regular URL for players. Only available for audios and videos.
+  /// Provide regular URL for players.
   ///  * Android: Content URI, e.g.
   ///    `content://media/external/video/media/894857`.
   ///  * iOS/macOS: File URL. e.g.
@@ -690,11 +680,8 @@ class AssetEntity {
   /// See also:
   ///  * https://developer.android.com/reference/android/content/ContentUris
   ///  * https://developer.apple.com/documentation/avfoundation/avurlasset
-  Future<String?> getMediaUrl() async {
-    if (type == AssetType.video || type == AssetType.audio || isLivePhoto) {
-      return plugin.getMediaUrl(this);
-    }
-    return null;
+  Future<String?> getMediaUrl() {
+    return plugin.getMediaUrl(this);
   }
 
   bool get _platformMatched =>

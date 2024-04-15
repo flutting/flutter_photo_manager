@@ -60,6 +60,18 @@ class RequestType {
     return RequestType(value << bit);
   }
 
+  /// The values of [RequestType].
+  static const values = <RequestType>[image, video, audio];
+
+  /// Computes the request type from given types.
+  static RequestType fromTypes(List<RequestType> types) {
+    RequestType result = const RequestType(0);
+    for (final type in types) {
+      result += type;
+    }
+    return result;
+  }
+
   @override
   bool operator ==(Object other) =>
       other is RequestType && value == other.value;
@@ -70,11 +82,6 @@ class RequestType {
   @override
   String toString() => '$runtimeType($value)';
 }
-
-@Deprecated(
-  'Use PermissionRequestOption instead. This will be removed in 3.0.0',
-)
-typedef PermisstionRequestOption = PermissionRequestOption;
 
 /// See [PermissionState].
 @immutable

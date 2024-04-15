@@ -11,7 +11,7 @@ that can be found in the LICENSE file. -->
 [![Build status](https://img.shields.io/github/actions/workflow/status/fluttercandies/flutter_photo_manager/runnable.yml?branch=main&label=CI&logo=github&style=flat-square)](https://github.com/fluttercandies/flutter_photo_manager/actions/workflows/runnable.yml)
 [![GitHub license](https://img.shields.io/github/license/fluttercandies/flutter_photo_manager)](https://github.com/fluttercandies/flutter_photo_manager/blob/main/LICENSE)
 
-[![GitHub stars](https://img.shields.io/github/stars/fluttercandies/flutter_photo_manager?style=social&label=Stars)](https://github.com/fluttercandies/flutter_photo_manager/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/fluttercandies/flutter_photo_manager?logo=github&style=flat-square)](https://github.com/fluttercandies/flutter_photo_manager/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/fluttercandies/flutter_photo_manager?logo=github&style=flat-square)](https://github.com/fluttercandies/flutter_photo_manager/network)
 [![Awesome Flutter](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/Solido/awesome-flutter)
 <a target="_blank" href="https://jq.qq.com/?_wv=1027&k=5bcc0gy"><img border="0" src="https://pub.idqqimg.com/wpa/images/group.png" alt="FlutterCandies" title="FlutterCandies"></a>
@@ -97,6 +97,7 @@ that can be found in the LICENSE file. -->
       * [复制资源](#复制资源)
       * [仅适用于 Android 的功能](#仅适用于-android-的功能)
         * [将资源移动到另一个相册](#将资源移动到另一个相册)
+        * [将资源移动到废纸篓](#将资源移动到废纸篓)
         * [移除所有不存在的资源](#移除所有不存在的资源)
       * [适用于 iOS 或 macOS 的功能](#适用于-ios-或-macos-的功能)
         * [创建一个文件夹](#创建一个文件夹)
@@ -147,7 +148,7 @@ import 'package:photo_manager/photo_manager.dart';
 
 ##### Kotlin, Gradle, AGP
 
-该插件使用 **Kotlin `1.6.21`** 来构建。
+该插件使用 **Kotlin `1.7.22`** 来构建。
 如果你的项目使用了低于此版本的 Kotlin/Gradle/AGP，请升级到大于或等于指定版本。
 
 更具体的做法:
@@ -155,7 +156,7 @@ import 'package:photo_manager/photo_manager.dart';
 - 更新你的 Gradle version (`gradle-wrapper.properties`)
   到 `7.5.1` 或者最新版本。
 - 更新你的 Kotlin version (`ext.kotlin_version`)
-  到 `1.7.21` 或者最新版本。
+  到 `1.7.22` 或者最新版本。
 - 更新你的 AGP version (`com.android.tools.build:gradle`)
   或者 `7.2.2` 或者最新版本。
 
@@ -397,9 +398,17 @@ iOS 为了节省磁盘空间，可能将资源仅保存在 iCloud 上。
 
 #### 展示资源
 
-插件提供 `AssetEntityImage` widget 和
+从 v3.0.0 开始，插件不再提供任何 UI 组件。
+`AssetEntityImage` 和 `AssetEntityImageProvider` 在
+[`photo_manager_image_provider`][photo_manager_image_provider]
+插件中提供。
+
+新的插件提供 `AssetEntityImage` widget 和
 `AssetEntityImageProvider` 来处理资源的展示：
+
 ```dart
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
+
 final Widget image = AssetEntityImage(
   yourAssetEntity,
   isOriginal: false,
@@ -717,7 +726,7 @@ rootProject.allprojects {
 
 ```xml
 <manifest>
-   <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" /> <!-- 这是一个可选的配置，不指定并不影响在代码中使用它 -->
+   <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" /> <!-- 如果需要提供可选的资源的功能 -->
 </manifest>
 ```
 
@@ -933,3 +942,4 @@ PhotoManager.editor.darwin.deletePath();
 [`LocallyAvailableBuilder`]: https://github.com/fluttercandies/flutter_wechat_assets_picker/blob/2055adfa74370339d10e6f09adef72f2130d2380/lib/src/widget/builder/locally_available_builder.dart
 
 [flutter/flutter#20522]: https://github.com/flutter/flutter/issues/20522
+[photo_manager_image_provider]: https://pub.flutter-io.cn/packages/photo_manager_image_provider

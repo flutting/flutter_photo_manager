@@ -4,27 +4,41 @@ that can be found in the LICENSE file. -->
 
 # CHANGELOG
 
+To know more about breaking changes, see the [Migration Guide][].
+
+## 3.0.0
+
+### Breaking changes
+
+See the [Migration Guide][] for details of breaking changes.
+
+### Improvements
+
+- Remove the restriction of `getMediaUrl`.
+
+### Fixes
+
+- Fix `PhotoManager.editor.deleteWithIds` method not working on Android API 29.
+- Dispatch channel calls in main thread on Darwin.
+- Fix `presentLimit` did not finish on Android. (#1052)
+- Fix `requestPermissionExtend` returns the incorrect status on Android API 34.
+
+## 2.8.1
+
+### Fixes
+
+- Upgrade android/build.gradle to load current java version from some environment variables.
+- Fix the `setIgnorePermissionCheck` method not working on Android.
+
 ## 2.8.0
 
-### Feature
+### Breaking changes
 
-- Support android API 34(Android 14) limit access to photos and videos.
-- Because limit permission, we refactor the permission request API.
+See the [Migration Guide][] for details of breaking changes.
 
-***Breaking changes for permission behavior***
+### Features
 
-Methods do not implicitly call for permission requests anymore.
-User must follow the below methods to ensure permissions were granted:
-
-1. `PhotoManager.requestPermissionExtend()`, verify if the result is
-   `PermissionState.authorized` or `PermissionState.limited`.
-2. `PhotoManager.setIgnorePermissionCheck(true)`, ignoring permission checks,
-   handle permission with other mechanisms.
-
-Behavior changes to the method of the method of `PhotoManager.editor.deleteWithIds`:
-
-- The behavior changes to delete instead of moving to Trash on Android 30+. (#959)
-- Provides a new method to move resources to the Trash. (`PhotoManager.editor.android.moveToTrash`), the method only support Android 30+. (#1005)
+- Support Android 14 limited access to assets.
 
 ### Fixes
 
@@ -288,7 +302,10 @@ Behavior changes to the method of the method of `PhotoManager.editor.deleteWithI
 
 A major version release for performance improvements, new features, issues fixed, and breaking changes.
 Also, the LICENSE has been updated with the new author [FlutterCandies](https://github.com/fluttercandies).
-To know more about breaking changes, see the [Migration Guide][].
+
+### Breaking changes
+
+See the [Migration Guide][] for details of breaking changes.
 
 ### Features
 

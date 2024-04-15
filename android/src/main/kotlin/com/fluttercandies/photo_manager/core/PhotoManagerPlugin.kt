@@ -2,6 +2,7 @@ package com.fluttercandies.photo_manager.core
 
 import android.app.Activity
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -226,7 +227,7 @@ class PhotoManagerPlugin(
                 permissionsUtils.withActivity(activity)
                     .setListener(object : PermissionsListener {
                         override fun onGranted(needPermissions: MutableList<String>) {
-                            resultHandler.reply(PermissionResult.Authorized.value)
+                            resultHandler.reply(permissionsUtils.getAuthValue(requestType, mediaLocation).value)
                         }
 
                         override fun onDenied(
@@ -255,12 +256,6 @@ class PhotoManagerPlugin(
             Methods.presentLimited -> {
                 val type = call.argument<Int>("type")!!
                 permissionsUtils.presentLimited(type, resultHandler)
-            }
-
-            Methods.ignorePermissionCheck -> {
-                val ignore = call.argument<Boolean>("ignore")!!
-                ignorePermissionCheck = ignore
-                resultHandler.reply(ignore)
             }
         }
 
@@ -319,6 +314,12 @@ class PhotoManagerPlugin(
                 // The plugin will not hold instances cache on Android.
                 resultHandler.reply(1)
             }
+
+            Methods.ignorePermissionCheck -> {
+                val ignore = call.argument<Boolean>("ignore")!!
+                ignorePermissionCheck = ignore
+                resultHandler.reply(ignore)
+            }
         }
     }
 
@@ -355,6 +356,14 @@ class PhotoManagerPlugin(
                 val list =
                     photoManager.getAssetListPaged(galleryId, type, page, size, option)
                 resultHandler.reply(ConvertUtils.convertAssets(list))
+            }
+
+            Methods.getAssetCountFromPath -> {
+                val galleryId = call.getString("id")
+                val type = call.getInt("type")
+                val option = call.getOption()
+
+                photoManager.getAssetCount(resultHandler, option, type, galleryId)
             }
 
             Methods.getAssetListRange -> {
@@ -529,6 +538,13 @@ class PhotoManagerPlugin(
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                         val uris = ids.map { photoManager.getUri(it) }.toList()
                         deleteManager.deleteInApi30(uris, resultHandler)
+                    } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                        val idUriMap = HashMap<String, Uri?>()
+                        for (id in ids) {
+                            val uri = photoManager.getUri(id)
+                            idUriMap[id] = uri
+                        }
+                        deleteManager.deleteJustInApi29(idUriMap, resultHandler)
                     } else {
                         deleteManager.deleteInApi28(ids)
                         resultHandler.reply(ids)
